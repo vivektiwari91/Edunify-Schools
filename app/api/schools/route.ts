@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import executeQuery from '../../lib/db';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,37 +12,29 @@ export async function POST(request: NextRequest) {
     const email = formData.get('email') as string;
     const image = formData.get('image') as File;
 
-    let imagePath = '';
+    let imageBase64 = '';
     if (image) {
-      const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const fileName = `${Date.now()}-${image.name}`;
-      const dirPath = path.join(process.cwd(), 'public', 'schoolImages');
-      await mkdir(dirPath, { recursive: true });
-      const filePath = path.join(dirPath, fileName);
-      await writeFile(filePath, buffer);
-      imagePath = `/schoolImages/${fileName}`;
+      const arrayBuffer = await image.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      imageBase64 = buffer.toString('base64');
+      const result = await executeQuery({
+        query: `
+          INSERT INTO schools (name, address, city, state, contact, email_id, image)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `,
+        values: [name, address, city, state, contact.replace(/\D/g, ''), email, imageBase64]
+      });
+
+      return NextResponse.json({
+        message: 'School added successfully',
+        result
+      });
     }
-
-    const result = await executeQuery({
-      query: `
-        INSERT INTO schools (name, address, city, state, contact, email_id, image)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `,
-      values: [name, address, city, state, contact.replace(/\D/g, ''), email, imagePath]
-    });
-
-    return NextResponse.json({
-      message: 'School added successfully',
-      result
-    });
   } catch (error) {
     console.error('Error adding school:', error);
     return NextResponse.json({
       error: 'Failed to add school'
-    }, {
-      status: 500
-    });
+    }, { status: 500 });
   }
 }
 
@@ -66,9 +56,6 @@ export async function GET() {
     console.error('Error fetching schools:', error);
     return NextResponse.json({
       error: 'Failed to fetch schools'
-    }, {
-      status: 500
-    });
+    }, { status: 500 });
   }
 }
-

@@ -39,7 +39,7 @@ function SchoolCard({ school }) {
           height={'200px'}
         >
           <Image
-            src={school.image}
+            src={`data:image/jpeg;base64,${school.image}`}
             alt={school.name}
             borderRadius="md"
             objectFit="cover"

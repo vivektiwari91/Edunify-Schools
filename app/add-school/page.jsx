@@ -172,6 +172,8 @@ export default function AddSchoolForm() {
                   borderWidth={2}
                   borderStyle="dashed"
                   rounded="md"
+                  onClick={() => document.getElementById('file-upload').click()}
+                  cursor={'pointer'}
                 >
                   <Stack spacing={1} textAlign="center">
                     <Icon
@@ -227,7 +229,6 @@ export default function AddSchoolForm() {
                           />
                         </VisuallyHidden>
                       </chakra.label>
-                      <Text pl={1}>or drag and drop</Text>
                     </Flex>
                     <Text
                       fontSize="xs"
